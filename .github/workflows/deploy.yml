@@ -5,28 +5,48 @@ on:
     branches:
       - main  # Change this to your default branch
 
+permissions:
+  contents: write
+
+
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Setup Ruby
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version:  '3.0' # Upgrade to a compatible Ruby version
+        ruby-version:  '3.2.2' # Upgrade to a compatible Ruby version
+        bundler-cache: true
 
-    - name: Install dependencies
-      run: bundle install
-
-    - name: Build Jekyll site
-      run: bundle exec jekyll build
-
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
+    - name: Update _config.yml
+      uses: fjogeleit/yaml-update-action@main
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./_site
-        publish_branch: gh-pages
+        commitChange: false
+        valueFile: "_config.yml"
+        propertyPath: "giscus.repo"
+        value: ${{ github.repository }}
+
+    - name: Install and Build 🔧
+      run: |
+        pip3 install --upgrade jupyter
+        export JEKYLL_ENV=production
+        bundle exec jekyll build
+
+    - name: Purge unused CSS 🧹
+      run: |
+        npm install -g purgecss
+        purgecss -c purgecss.config.js
+
+    - name: Deploy 🚀
+      if: github.event_name != 'pull_request'
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        folder: _site
+        # Ensure you have the correct token and branch settings
+        branch: gh-pages  # Specify the branch to deploy to
+        token: ${{ secrets.GITHUB_TOKEN }}
