@@ -31,22 +31,13 @@ jobs:
         propertyPath: "giscus.repo"
         value: ${{ github.repository }}
 
-    - name: Install and Build 🔧
-      run: |
-        pip3 install --upgrade jupyter
-        export JEKYLL_ENV=production
-        bundle exec jekyll build
+    - name: Install dependencies
+      run: bundle install
 
-    - name: Purge unused CSS 🧹
-      run: |
-        npm install -g purgecss
-        purgecss -c purgecss.config.js
+    - name: Build Jekyll site
+      run: bundle exec jekyll build
 
-    - name: Deploy 🚀
-      if: github.event_name != 'pull_request'
+    - name: Deploy to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@v4
       with:
         folder: _site
-        # Ensure you have the correct token and branch settings
-        branch: gh-pages  # Specify the branch to deploy to
-        token: ${{ secrets.GITHUB_TOKEN }}
