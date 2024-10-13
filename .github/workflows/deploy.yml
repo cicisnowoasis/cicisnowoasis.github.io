@@ -20,7 +20,7 @@ jobs:
     - name: Setup Ruby
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version:  '3.0' # Upgrade to a compatible Ruby version
+        ruby-version:  '3.0.7' # Upgrade to a compatible Ruby version
         bundler-cache: true
 
     - name: Update _config.yml
